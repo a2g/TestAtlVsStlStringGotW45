@@ -1089,29 +1089,30 @@ int main( int argc, char* argv[] )
 
     // Create a local variable testString instead of using VC++'s non-standard extension
     // (conversion from X to X&)
-    #define RUN_TEST( TEST_NAME ) \
+#define RUN_TEST( TEST_NAME, TEST_DESC ) \
     { \
+        auto description{TEST_DESC};\
         TEST_NAME::String testString; \
         cout << "  " << setw(15) << #TEST_NAME; \
         cout << setw(7) << Test(testString, nLoops, nLen ); \
         cout << "ms  copies:" << setw(8) << TEST_NAME::String::nCopies \
              << "  allocs:" << setw(8) << TEST_NAME::String::nAllocs \
+             << " " << description \
              << endl; \
     }
 
 
     for( int i = 1; i <= nRuns; ++i )
     {
-        RUN_TEST( Plain_FastAlloc );
-        RUN_TEST( Plain );
-        RUN_TEST( COW_Unsafe );
-        RUN_TEST( COW_AtomicInt );
-        RUN_TEST( COW_AtomicInt2 );
-        RUN_TEST( COW_CritSec );
-        RUN_TEST( COW_Mutex );
-        
-        RUN_TEST( StdString );
-        RUN_TEST( AtlString );
+        RUN_TEST( Plain_FastAlloc, "Non-thread safe");
+        RUN_TEST( Plain, "Non-use-counted string; all others are modeled on this (a refined version of the GotW #43 answer)");
+        RUN_TEST( COW_Unsafe,  "Plain + COW, Non-thread-safe(a refined version of the GotW #44 answer)");
+        RUN_TEST( COW_AtomicInt , "Plain + COW + Thread-safe(a refined version of this GotW #45 1(a)answer above)");
+        RUN_TEST( COW_AtomicInt2, "COW_AtomicInt + StringBuf in same buffer as the data(another refined version of this GotW #45 #1(a)above)");
+        RUN_TEST( COW_CritSec, "Plain + COW + thread - safe(Win32  critical sections) (a refined version  of this GotW #45 #1(b)answer above)");
+        RUN_TEST( COW_Mutex, "Plain + COW + thread - safe(Win32 mutexes) (COW_CritSec with mutexes instead of critical sections)");
+        RUN_TEST( StdString, "std::string");
+        RUN_TEST( AtlString, "CString");
 
         cout << endl;
     }
